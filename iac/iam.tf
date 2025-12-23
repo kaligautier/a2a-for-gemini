@@ -35,3 +35,36 @@ resource "google_project_iam_member" "cloudbuild_secret_admin" {
   role    = "roles/secretmanager.admin"
   member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
 }
+
+# Permission to write to Artifact Registry
+resource "google_project_iam_member" "cloudbuild_artifactregistry_writer" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permissions for logging
+resource "google_project_iam_member" "cloudbuild_logging_bucket_writer" {
+  project = var.project_id
+  role    = "roles/logging.bucketWriter"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_logging_log_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_logging_viewer" {
+  project = var.project_id
+  role    = "roles/logging.viewer"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permission to manage Cloud Storage
+resource "google_project_iam_member" "cloudbuild_storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
