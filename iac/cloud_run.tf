@@ -1,18 +1,3 @@
-
-resource "google_project_iam_member" "cloudbuild_artifactregistry_writer" {
-  project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
-}
-
-# Grant service account user role to the default compute service account
-# This allows Cloud Run to use the compute service account
-resource "google_project_iam_member" "compute_service_account_user" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
-}
-
 data "google_project" "project" {
 }
 
@@ -20,10 +5,8 @@ resource "google_cloud_run_v2_service" "default" {
   name     = var.service_name
   location = var.region
 
-  # Depend on IAM permissions and secrets being set up first
+  # Depend on secrets being set up first
   depends_on = [
-    google_project_iam_member.cloudbuild_artifactregistry_writer,
-    google_project_iam_member.compute_service_account_user,
     google_secret_manager_secret_version.google_cloud_location,
     google_secret_manager_secret_version.google_cloud_project,
     google_secret_manager_secret_version.model,
