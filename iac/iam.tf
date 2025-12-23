@@ -1,0 +1,37 @@
+# IAM permissions for Cloud Build service account
+# This service account needs permissions to manage IAM and deploy Cloud Run
+
+# Permission to manage IAM bindings
+resource "google_project_iam_member" "cloudbuild_iam_admin" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permission to act as service accounts (required for Cloud Run deployment)
+resource "google_project_iam_member" "cloudbuild_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permission to manage Cloud Run services
+resource "google_project_iam_member" "cloudbuild_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permission to access secrets (for Cloud Run environment variables)
+resource "google_project_iam_member" "cloudbuild_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+# Permission to manage secrets (to create them if they don't exist)
+resource "google_project_iam_member" "cloudbuild_secret_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:build-learning-path-sa@${var.project_id}.iam.gserviceaccount.com"
+}

@@ -14,6 +14,37 @@ steps:
         chmod +x init.sh
         ./init.sh ${PROJECT_ID}
 
+  # Create Artifact Registry repository
+  - id: 'create-ar-repo'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        gcloud artifacts repositories create ${_AR_REPO} \
+          --repository-format=docker \
+          --location=${_LOCATION} \
+          --description="Docker repository for a2a-for-gemini" || true
+    waitFor: ['project-init']
+
+  # Build the Docker image
+  - id: 'docker-build'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$BUILD_ID'
+      - '.'
+    waitFor: ['create-ar-repo']
+
+  # Push the Docker image to Artifact Registry
+  - id: 'docker-push'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$BUILD_ID'
+    waitFor: ['docker-build']
+
   # Terraform init
   - id: 'terraform-init'
     name: 'hashicorp/terraform:1.14.1'
@@ -23,6 +54,7 @@ steps:
       - |
         cd iac
         terraform init -input=false -no-color -upgrade -backend-config=init/backend.tfvars
+    waitFor: ['project-init']
 
   # Terraform plan
   - id: 'terraform-plan'
@@ -32,7 +64,8 @@ steps:
       - '-c'
       - |
         cd iac
-        terraform plan -out=changes.tfplan -var project_id=$PROJECT_ID
+        terraform plan -out=changes.tfplan -var project_id=$PROJECT_ID -var="image=${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE_NAME}:$BUILD_ID"
+    waitFor: ['terraform-init', 'docker-push']
 
   # Terraform apply
   - id: 'terraform-apply'
@@ -43,7 +76,15 @@ steps:
       - |
         cd iac
         terraform apply -input=false -no-color -auto-approve changes.tfplan
+    waitFor: ['terraform-plan']
+
+substitutions:
+  _SERVICE_NAME: a2a-for-gemini
+  _LOCATION: europe-west1
+  _AR_REPO: a2a-for-gemini-repo
 
 timeout: 5400s
 options:
   logging: CLOUD_LOGGING_ONLY
+
+serviceAccount: projects/proud-breaker-481516-d9/serviceAccounts/build-learning-path-sa@proud-breaker-481516-d9.iam.gserviceaccount.com
