@@ -17,6 +17,10 @@ resource "google_cloud_run_v2_service" "default" {
     google_secret_manager_secret_version.log_level,
     google_secret_manager_secret_version.agent_name,
     google_secret_manager_secret_version.google_genai_use_vertexai,
+    google_secret_manager_secret_version.rag_corpus_id,
+    google_secret_manager_secret_version.a2a_base_url,
+    google_secret_manager_secret_version.a2a_agent_quizz_agent_url,
+    google_secret_manager_secret_version.a2a_agent_training_script_agent_url,
   ]
 
   template {
@@ -117,6 +121,64 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
+      env {
+        name = "RAG_CORPUS_ID"
+        value_source {
+          secret_key_ref {
+            secret  = "RAG_CORPUS_ID"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "A2A_BASE_URL"
+        value_source {
+          secret_key_ref {
+            secret  = "A2A_BASE_URL"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "A2A_AGENT_QUIZZ_AGENT_URL"
+        value_source {
+          secret_key_ref {
+            secret  = "A2A_AGENT_QUIZZ_AGENT_URL"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL"
+        value_source {
+          secret_key_ref {
+            secret  = "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL"
+            version = "latest"
+          }
+        }
+      }
     }
   }
 }
+
+# Output the service URL for reference
+output "service_url" {
+  description = "URL of the deployed Cloud Run service"
+  value       = google_cloud_run_v2_service.default.uri
+}
+
+output "a2a_quizz_agent_url" {
+  description = "A2A endpoint for the quizz agent"
+  value       = "${google_cloud_run_v2_service.default.uri}/a2a/quizz_agent"
+}
+
+output "a2a_training_script_agent_url" {
+  description = "A2A endpoint for the training script agent"
+  value       = "${google_cloud_run_v2_service.default.uri}/a2a/training_script_agent"
+}
+
+output "project_id" {
+  description = "GCP Project ID"
+  value       = data.google_project.project.project_id
+}
+

@@ -6,6 +6,8 @@ authors = [
     {name = "Your Name", email = "your@email.com"},
 ]
 dependencies = [
+    "a2a-sdk>=0.2.16",
+    "gradio>=5.38.2",
     "google-adk>=1.15.0,<2.0.0",
     "google-cloud-bigquery>=3.24.0,<4.0.0", # Added BigQuery dependency
     "opentelemetry-instrumentation-google-genai>=0.1.0,<1.0.0",

@@ -7,12 +7,15 @@ from fastapi.responses import JSONResponse
 from google.adk.cli.fast_api import get_fast_api_app
 
 from app.config.settings import settings
+from app.utils.agent_card_generator import generate_all_agent_cards
 
 logger = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application instance."""
+
+    generate_all_agent_cards()
 
     session_service_uri = None
     if settings.USE_AGENT_ENGINE_SESSIONS and settings.AGENT_ENGINE_ID:
@@ -24,6 +27,7 @@ def create_app() -> FastAPI:
     app: FastAPI = get_fast_api_app(
         agents_dir=settings.AGENT_DIR,
         web=True,  # Enable web UI
+        a2a=True,  # Enable A2A protocol support
         session_service_uri=session_service_uri,
     )
 
