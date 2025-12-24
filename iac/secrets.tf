@@ -81,6 +81,35 @@ resource "google_secret_manager_secret" "google_genai_use_vertexai" {
   }
 }
 
+resource "google_secret_manager_secret" "rag_corpus_id" {
+  secret_id = "RAG_CORPUS_ID"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "a2a_agent_quizz_agent_url" {
+  secret_id = "A2A_AGENT_QUIZZ_AGENT_URL"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "a2a_agent_training_script_agent_url" {
+  secret_id = "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL"
+
+  replication {
+    auto {}
+  }
+}
+
+# Reference existing A2A_BASE_URL secret (already exists in GCP)
+data "google_secret_manager_secret" "a2a_base_url" {
+  secret_id = "A2A_BASE_URL"
+}
+
 # Secret versions with initial values
 resource "google_secret_manager_secret_version" "google_cloud_location" {
   secret      = google_secret_manager_secret.google_cloud_location.id
@@ -132,6 +161,26 @@ resource "google_secret_manager_secret_version" "google_genai_use_vertexai" {
   secret_data = "true"
 }
 
+resource "google_secret_manager_secret_version" "rag_corpus_id" {
+  secret      = google_secret_manager_secret.rag_corpus_id.id
+  secret_data = "projects/${var.project_id}/locations/${var.region}/ragCorpora/placeholder-corpus-id"
+}
+
+resource "google_secret_manager_secret_version" "a2a_base_url" {
+  secret      = data.google_secret_manager_secret.a2a_base_url.id
+  secret_data = "https://placeholder.example.com"
+}
+
+resource "google_secret_manager_secret_version" "a2a_agent_quizz_agent_url" {
+  secret      = google_secret_manager_secret.a2a_agent_quizz_agent_url.id
+  secret_data = " "
+}
+
+resource "google_secret_manager_secret_version" "a2a_agent_training_script_agent_url" {
+  secret      = google_secret_manager_secret.a2a_agent_training_script_agent_url.id
+  secret_data = " "
+}
+
 # Grant Cloud Run service account access to secrets
 resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
   for_each = toset([
@@ -145,6 +194,10 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
     "LOG_LEVEL",
     "AGENT_NAME",
     "GOOGLE_GENAI_USE_VERTEXAI",
+    "RAG_CORPUS_ID",
+    "A2A_BASE_URL",
+    "A2A_AGENT_QUIZZ_AGENT_URL",
+    "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL",
   ])
 
   secret_id = each.value
@@ -162,5 +215,9 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
     google_secret_manager_secret.log_level,
     google_secret_manager_secret.agent_name,
     google_secret_manager_secret.google_genai_use_vertexai,
+    google_secret_manager_secret.rag_corpus_id,
+    google_secret_manager_secret.a2a_agent_quizz_agent_url,
+    google_secret_manager_secret.a2a_agent_training_script_agent_url,
   ]
 }
+

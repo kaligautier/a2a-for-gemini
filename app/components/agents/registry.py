@@ -6,42 +6,23 @@ making it easy to discover and access all available agents programmatically.
 """
 
 from typing import Dict
-from google.adk.agents import LlmAgent
 
-# Import all agents
-from app.components.agents.master_agent.agent import root_agent as master_agent
-from app.components.agents.google_search_agent.agent import root_agent as google_search_agent
-from app.components.agents.agent_with_bq_toolbox.agent import root_agent as agent_bq_with_mcp_toolbox
-from app.components.agents.agent_with_native_bq.agent import root_agent as agent_with_native_bq
-from app.components.agents.agent_with_pg.agent import root_agent as agent_with_pg
-from app.components.agents.agent_with_tools.agent import root_agent as agent_with_tools
-from app.components.agents.agent_with_vertex_ai_search.agent import root_agent as agent_with_vertex_ai_search
-from app.components.agents.agent_with_vertex_rag.agent import root_agent as agent_with_vertex_rag
-from app.components.agents.parralel_agent.agent import root_agent as parallel_agent
-from app.components.agents.seq_and_loop_agent.agent import root_agent as seq_and_loop_agent
+from google.adk.agents import Agent
 
+from app.components.agents.quizz_agent.agent import (
+    root_agent as quizz_agent,
+)
+from app.components.agents.training_script_agent.agent import (
+    root_agent as training_script_agent,
+)
 
-# Agent registry: maps agent names to agent instances
-AGENTS_REGISTRY: Dict[str, LlmAgent] = {
-    # Master orchestrator
-    "master_agent": master_agent,
-
-    # Specialized agents
-    "google_search_agent": google_search_agent,
-    "agent_bq_with_mcp_toolbox": agent_bq_with_mcp_toolbox,
-    "agent_with_native_bq": agent_with_native_bq,
-    "agent_with_pg": agent_with_pg,
-    "agent_with_tools": agent_with_tools,
-    "agent_with_vertex_ai_search": agent_with_vertex_ai_search,
-    "agent_with_vertex_rag": agent_with_vertex_rag,
-
-    # Workflow agents
-    "parallel_agent": parallel_agent,
-    "seq_and_loop_agent": seq_and_loop_agent,
+AGENTS_REGISTRY: dict[str, Agent] = {
+    "quizz_agent": quizz_agent,
+    "training_script_agent": training_script_agent,
 }
 
 
-def get_all_agents() -> Dict[str, LlmAgent]:
+def get_all_agents() -> Dict[str, Agent]:
     """
     Get all registered agents.
 
@@ -51,7 +32,7 @@ def get_all_agents() -> Dict[str, LlmAgent]:
     return AGENTS_REGISTRY
 
 
-def get_agent(agent_name: str) -> LlmAgent:
+def get_agent(agent_name: str) -> Agent:
     """
     Get a specific agent by name.
 

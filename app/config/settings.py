@@ -109,6 +109,61 @@ class Settings(BaseSettings):
         description="Enable Vertex AI Agent Engine Sessions (fully managed on GCP)",
     )
 
+    A2A_BASE_URL: str = Field(
+        default="http://localhost:8085",
+        description="Base URL for A2A agent exposure (e.g., https://your-domain.com)",
+    )
+
+    A2A_AGENT_NAME: str = Field(
+        default="quizz_agent",
+        description="Name of the agent to expose via A2A protocol",
+    )
+
+    # Custom URLs per agent (optional)
+    # Format: A2A_AGENT_<AGENT_NAME>_URL
+    # Example: A2A_AGENT_QUIZZ_AGENT_URL=https://agent1.example.com
+    A2A_AGENT_QUIZZ_AGENT_URL: str = Field(
+        default="",
+        description="Custom URL for quizz_agent (overrides A2A_BASE_URL)",
+    )
+
+    A2A_AGENT_TRAINING_SCRIPT_AGENT_URL: str = Field(
+        default="",
+        description="Custom URL for training_script_agent (overrides A2A_BASE_URL)",
+    )
+
+    RAG_CORPUS_ID: str = Field(
+        default="projects/default/locations/default/ragCorpora/corpus_id",
+        description=(
+            "Vertex AI RAG Corpus resource name "
+            "(format: projects/PROJECT_ID/locations/LOCATION/"
+            "ragCorpora/CORPUS_ID)"
+        ),
+    )
+
+    def get_agent_url(self, agent_name: str) -> str:
+        """
+        Get the A2A URL for a specific agent.
+
+        Priority:
+        1. Agent-specific URL (A2A_AGENT_<AGENT_NAME>_URL)
+        2. Base A2A URL (A2A_BASE_URL)
+
+        Args:
+            agent_name: Name of the agent
+
+        Returns:
+            The URL for the agent
+        """
+        env_var_name = f"A2A_AGENT_{agent_name.upper()}_URL"
+
+        agent_url = getattr(self, env_var_name, "")
+
+        if agent_url:
+            return agent_url
+
+        return self.A2A_BASE_URL
+
 try:
     settings = Settings()
 except ValidationError as e:
