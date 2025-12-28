@@ -1,6 +1,7 @@
 """Error handling with structured exceptions and HTTP status mapping."""
 
 from enum import Enum
+from typing import Any
 
 
 class ErrorCode(Enum):
@@ -45,8 +46,8 @@ class AppError(Exception):
     def __init__(
         self,
         error_code: ErrorCode,
-        message: str = None,
-        details: dict = None,
+        message: str | None = None,
+        details: dict | None = None,
     ):
         self.error_code = error_code
         self.status_code = HTTP_STATUS_CODES.get(error_code, 500)
@@ -55,12 +56,12 @@ class AppError(Exception):
 
         super().__init__(self.message)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation with error code and details."""
         detail_str = f", details={self.details}" if self.details else ""
         return f"[{self.error_code.name}] {self.message}{detail_str}"
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Convert exception to dictionary for API responses."""
         return {
             "error_code": self.error_code.name,
@@ -73,42 +74,14 @@ class AppError(Exception):
 class InvalidInputError(AppError):
     """Raised when input validation fails."""
 
-    def __init__(self, message: str = None, details: dict = None):
-        super().__init__(
-            error_code=ErrorCode.INVALID_INPUT,
-            message=message,
-            details=details,
-        )
-
 
 class ConfigurationError(AppError):
     """Raised when configuration is invalid or missing."""
-
-    def __init__(self, message: str = None, details: dict = None):
-        super().__init__(
-            error_code=ErrorCode.CONFIGURATION_ERROR,
-            message=message,
-            details=details,
-        )
 
 
 class InstructionError(AppError):
     """Raised when instruction loading or rendering fails."""
 
-    def __init__(self, message: str = None, details: dict = None):
-        super().__init__(
-            error_code=ErrorCode.INSTRUCTION_ERROR,
-            message=message,
-            details=details,
-        )
-
 
 class ToolExecutionError(AppError):
     """Raised when tool execution fails."""
-
-    def __init__(self, message: str = None, details: dict = None):
-        super().__init__(
-            error_code=ErrorCode.TOOL_EXECUTION_ERROR,
-            message=message,
-            details=details,
-        )

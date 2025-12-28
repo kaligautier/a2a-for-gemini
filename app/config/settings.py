@@ -2,11 +2,26 @@ import os
 from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
+from google.cloud import secretmanager
+from google.genai import types
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from google.genai import types
 
-from app.utils.error import ConfigurationError
+from app.utils.error import ConfigurationError, ErrorCode
+
+
+def get_secret(project_id: str, secret_id: str, version_id: str = "latest") -> str | None:
+    """Get a secret from Google Secret Manager."""
+    if not project_id:
+        return None
+    try:
+        client = secretmanager.SecretManagerServiceClient()
+        name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+        response = client.access_secret_version(name=name)
+        return response.payload.data.decode("UTF-8")
+    except Exception:
+        return None
+
 
 
 class Settings(BaseSettings):
@@ -96,9 +111,12 @@ class Settings(BaseSettings):
         default="europe-west1",
         description="GCP region (e.g., us-central1, europe-west1)",
     )
-    
+
     AGENT_ENGINE_ID: str = Field(
-        default="",
+        default_factory=lambda: get_secret(
+            os.getenv("GOOGLE_CLOUD_PROJECT", ""), "AGENT_ENGINE_ID"
+        )
+        or "",
         description=(
             "Vertex AI Agent Engine (Reasoning Engine) ID for managed sessions. "
             "Format: projects/PROJECT_ID/locations/LOCATION/reasoningEngines/ENGINE_ID"
@@ -168,6 +186,7 @@ try:
     settings = Settings()
 except ValidationError as e:
     raise ConfigurationError(
+        error_code=ErrorCode.CONFIGURATION_ERROR,
         message="Configuration validation failed",
         details={"pydantic_errors": e.errors()},
     ) from e

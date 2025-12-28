@@ -21,6 +21,7 @@ resource "google_cloud_run_v2_service" "default" {
     google_secret_manager_secret_version.a2a_base_url,
     google_secret_manager_secret_version.a2a_agent_quizz_agent_url,
     google_secret_manager_secret_version.a2a_agent_training_script_agent_url,
+    google_secret_manager_secret_version.agent_engine_id_secret_version,
   ]
 
   template {
@@ -153,6 +154,15 @@ resource "google_cloud_run_v2_service" "default" {
         value_source {
           secret_key_ref {
             secret  = "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "AGENT_ENGINE_ID"
+        value_source {
+          secret_key_ref {
+            secret  = "AGENT_ENGINE_ID"
             version = "latest"
           }
         }

@@ -9,6 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 from app.config.settings import settings
 
@@ -36,7 +37,7 @@ def get_agent_directory(agent_name: str) -> Path | None:
     return None
 
 
-def get_agent_description(agent_name: str, agent_instance) -> str:
+def get_agent_description(agent_name: str, agent_instance: Any) -> str:
     """
     Extract description from agent instance or module docstring.
 
@@ -70,7 +71,7 @@ def get_agent_description(agent_name: str, agent_instance) -> str:
     return f"{agent_name} agent"
 
 
-def generate_agent_card(agent_name: str, agent_instance) -> bool:
+def generate_agent_card(agent_name: str, agent_instance: Any) -> bool:
     """
     Generate agent.json file for a specific agent.
 

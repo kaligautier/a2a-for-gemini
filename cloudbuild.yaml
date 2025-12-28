@@ -47,7 +47,7 @@ steps:
 
   # Terraform init
   - id: 'terraform-init'
-    name: 'hashicorp/terraform:1.14.1'
+    name: 'hashicorp/terraform:1.8.0'
     entrypoint: 'sh'
     args:
       - '-c'
@@ -58,7 +58,7 @@ steps:
 
   # Terraform plan
   - id: 'terraform-plan'
-    name: 'hashicorp/terraform:1.14.1'
+    name: 'hashicorp/terraform:1.8.0'
     entrypoint: 'sh'
     args:
       - '-c'
@@ -69,7 +69,7 @@ steps:
 
   # Terraform apply
   - id: 'terraform-apply'
-    name: 'hashicorp/terraform:1.14.1'
+    name: 'hashicorp/terraform:1.8.0'
     entrypoint: 'sh'
     args:
       - '-c'

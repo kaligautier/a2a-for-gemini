@@ -1,9 +1,10 @@
 import logging
+from typing import Any
 
 import frontmatter
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateError, meta
 
-from app.utils.error import InstructionError
+from app.utils.error import InstructionError, ErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class InstructionsManager:
     _env = None
 
     @classmethod
-    def _get_env(cls, templates_dir: str = None):
+    def _get_env(cls, templates_dir: str | None = None) -> Environment:
         """Get or create Jinja2 environment."""
         if templates_dir is None:
             # Import here to avoid circular dependency
@@ -31,7 +32,7 @@ class InstructionsManager:
         return cls._env
 
     @staticmethod
-    def get_instructions(template, **kwargs):
+    def get_instructions(template: str, **kwargs: Any) -> str:
         """
         Load and render an instructions template.
 
@@ -47,22 +48,28 @@ class InstructionsManager:
         """
         env = InstructionsManager._get_env()
         template_path = f"{template}.j2"
-        logger.info(f"Loading instructions template: {template_path}")
-
         try:
-            with open(env.loader.get_source(env, template_path)[1]) as file:
+            if env.loader is None:
+                raise InstructionError(
+                    error_code=ErrorCode.INSTRUCTION_ERROR,
+                    message="Jinja2 environment loader is None",
+                    details={"template": template, "template_path": template_path},
+                )
+            with open(str(env.loader.get_source(env, template_path)[1])) as file:
                 post = frontmatter.load(file)
         except FileNotFoundError as e:
             error_msg = f"Template file not found: {template_path}"
             logger.error(error_msg)
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={"template": template, "template_path": template_path},
             ) from e
         except Exception as e:
             error_msg = f"Failed to load template: {template_path}"
-            logger.error(f"{error_msg}: {str(e)}")
+            logger.error(f"{error_msg}: {e!s}")
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={
                     "template": template,
@@ -82,8 +89,9 @@ class InstructionsManager:
             return rendered
         except TemplateError as e:
             error_msg = f"Error rendering template '{template_path}'"
-            logger.error(f"{error_msg}: {str(e)}")
+            logger.error(f"{error_msg}: {e!s}")
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={
                     "template": template,
@@ -94,7 +102,7 @@ class InstructionsManager:
             ) from e
 
     @staticmethod
-    def get_template_info(template):
+    def get_template_info(template: str) -> dict[str, Any]:
         """
         Get template metadata and variables.
 
@@ -112,19 +120,27 @@ class InstructionsManager:
         logger.info(f"Getting template info for: {template_path}")
 
         try:
-            with open(env.loader.get_source(env, template_path)[1]) as file:
+            if env.loader is None:
+                raise InstructionError(
+                    error_code=ErrorCode.INSTRUCTION_ERROR,
+                    message="Jinja2 environment loader is None",
+                    details={"template": template, "template_path": template_path},
+                )
+            with open(str(env.loader.get_source(env, template_path)[1])) as file:
                 post = frontmatter.load(file)
         except FileNotFoundError as e:
             error_msg = f"Template file not found: {template_path}"
             logger.error(error_msg)
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={"template": template, "template_path": template_path},
             ) from e
         except Exception as e:
             error_msg = f"Failed to load template: {template_path}"
-            logger.error(f"{error_msg}: {str(e)}")
+            logger.error(f"{error_msg}: {e!s}")
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={
                     "template": template,
@@ -137,9 +153,8 @@ class InstructionsManager:
             ast = env.parse(post.content)
             variables = meta.find_undeclared_variables(ast)
         except Exception as e:
-            error_msg = f"Failed to parse template: {template_path}"
-            logger.error(f"{error_msg}: {str(e)}")
             raise InstructionError(
+                error_code=ErrorCode.INSTRUCTION_ERROR,
                 message=error_msg,
                 details={
                     "template": template,

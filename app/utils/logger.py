@@ -21,7 +21,7 @@ class AppLoggingFilter(logging.Filter):
     - Formatted levelname with colon suffix
     """
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord) -> bool:
         """Enhance log record with custom attributes."""
         # Create module-qualified function name
         record.expandedFuncName = f"{record.module}.{record.funcName}"
@@ -32,7 +32,7 @@ class AppLoggingFilter(logging.Filter):
         return True
 
 
-def config_logger():
+def config_logger() -> None:
     """
     Configure application logging.
 
