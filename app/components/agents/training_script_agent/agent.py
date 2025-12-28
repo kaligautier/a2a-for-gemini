@@ -9,7 +9,10 @@ from app.components.callbacks.tool_callbacks import log_after_tool, log_before_t
 from app.components.tools.custom.vertex_ai_rag_retrieval_tool import (
     vertex_ai_rag_retrieval_tool,
 )
-from app.config.constants import AGENT_TRAINING_SCRIPT_DESCRIPTION, AGENT_TRAINING_SCRIPT_INSTRUCTION
+from app.config.constants import (
+    AGENT_TRAINING_SCRIPT_DESCRIPTION,
+    AGENT_TRAINING_SCRIPT_INSTRUCTION,
+)
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)

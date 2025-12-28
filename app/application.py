@@ -2,6 +2,7 @@
 
 import logging
 
+
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from google.adk.cli.fast_api import get_fast_api_app
@@ -18,9 +19,14 @@ def create_app() -> FastAPI:
     generate_all_agent_cards()
 
     session_service_uri = None
-    if settings.USE_AGENT_ENGINE_SESSIONS and settings.AGENT_ENGINE_ID:
-        session_service_uri = f"agentengine://{settings.AGENT_ENGINE_ID}"
-        logger.info(f"Using Vertex AI Agent Engine Sessions: {settings.AGENT_ENGINE_ID}")
+    if settings.USE_AGENT_ENGINE_SESSIONS:
+        if not settings.AGENT_ENGINE_ID:
+            raise ValueError(
+                "AGENT_ENGINE_ID must be set when USE_AGENT_ENGINE_SESSIONS is True."
+            )
+        APP_ID = settings.AGENT_ENGINE_ID.split('/')[-1]
+        session_service_uri = f"agentengine://{APP_ID}"
+        logger.info(f"Using Vertex AI Agent Engine Sessions: {APP_ID}")
     else:
         logger.info("Using InMemorySessionService (sessions not persisted)")
 
@@ -36,7 +42,7 @@ def create_app() -> FastAPI:
     app.version = settings.APP_VERSION
 
     @app.get("/health", tags=["Health"], summary="Health Check")
-    async def health_check():
+    async def health_check() -> JSONResponse:
         """
         Health check endpoint for monitoring systems.
 

@@ -20,7 +20,7 @@ Use cases:
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from google.adk.tools import BaseTool, ToolContext
 
@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 def log_before_tool(
-    tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext
-) -> Optional[Dict]:
+    tool: BaseTool, args: dict[str, Any], tool_context: ToolContext
+) -> dict | None:
     """
     Log before tool execution.
 
@@ -48,8 +48,8 @@ def log_before_tool(
 
 
 def log_after_tool(
-    tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext, tool_response: Dict
-) -> Optional[Dict]:
+    tool: BaseTool, args: dict[str, Any], tool_context: ToolContext, tool_response: dict
+) -> dict | None:
     """
     Log after tool execution.
 

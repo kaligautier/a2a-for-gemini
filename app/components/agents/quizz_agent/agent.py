@@ -23,7 +23,7 @@ root_agent = LlmAgent(
         vertex_ai_rag_retrieval_tool
     ],
     before_agent_callback=log_agent_start,
-    after_agent_callback=log_agent_end, 
+    after_agent_callback=log_agent_end,
     before_tool_callback=log_before_tool,
     after_tool_callback=log_after_tool
 )

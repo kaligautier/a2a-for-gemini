@@ -5,7 +5,6 @@ This module provides a dictionary mapping agent names to their instances,
 making it easy to discover and access all available agents programmatically.
 """
 
-from typing import Dict
 
 from google.adk.agents import Agent
 
@@ -22,7 +21,7 @@ AGENTS_REGISTRY: dict[str, Agent] = {
 }
 
 
-def get_all_agents() -> Dict[str, Agent]:
+def get_all_agents() -> dict[str, Agent]:
     """
     Get all registered agents.
 
