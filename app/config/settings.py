@@ -127,6 +127,23 @@ class Settings(BaseSettings):
         description="Enable Vertex AI Agent Engine Sessions (fully managed on GCP)",
     )
 
+    GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY: bool = Field(
+        default=False,
+        description=(
+            "Enable OpenTelemetry traces and logs for Agent Engine. "
+            "Captures agent execution traces and logs (excludes prompt/response content by default)."
+        ),
+    )
+
+    OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT: bool = Field(
+        default=False,
+        description=(
+            "Capture input requests and output responses in OpenTelemetry logs. "
+            "When enabled with GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY, "
+            "logs will include full prompt and response content."
+        ),
+    )
+
     A2A_BASE_URL: str = Field(
         default="http://localhost:8085",
         description="Base URL for A2A agent exposure (e.g., https://your-domain.com)",
