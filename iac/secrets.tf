@@ -105,6 +105,30 @@ resource "google_secret_manager_secret" "a2a_agent_training_script_agent_url" {
   }
 }
 
+resource "google_secret_manager_secret" "use_agent_engine_sessions" {
+  secret_id = "USE_AGENT_ENGINE_SESSIONS"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "google_cloud_agent_engine_enable_telemetry" {
+  secret_id = "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "otel_instrumentation_genai_capture_message_content" {
+  secret_id = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
+
+  replication {
+    auto {}
+  }
+}
+
 # Reference existing A2A_BASE_URL secret (already exists in GCP)
 data "google_secret_manager_secret" "a2a_base_url" {
   secret_id = "A2A_BASE_URL"
@@ -181,6 +205,21 @@ resource "google_secret_manager_secret_version" "a2a_agent_training_script_agent
   secret_data = " "
 }
 
+resource "google_secret_manager_secret_version" "use_agent_engine_sessions" {
+  secret      = google_secret_manager_secret.use_agent_engine_sessions.id
+  secret_data = "true"
+}
+
+resource "google_secret_manager_secret_version" "google_cloud_agent_engine_enable_telemetry" {
+  secret      = google_secret_manager_secret.google_cloud_agent_engine_enable_telemetry.id
+  secret_data = "true"
+}
+
+resource "google_secret_manager_secret_version" "otel_instrumentation_genai_capture_message_content" {
+  secret      = google_secret_manager_secret.otel_instrumentation_genai_capture_message_content.id
+  secret_data = "true"
+}
+
 # Grant Cloud Run service account access to secrets
 resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
   for_each = toset([
@@ -198,6 +237,9 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
     "A2A_BASE_URL",
     "A2A_AGENT_QUIZZ_AGENT_URL",
     "A2A_AGENT_TRAINING_SCRIPT_AGENT_URL",
+    "USE_AGENT_ENGINE_SESSIONS",
+    "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY",
+    "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT",
   ])
 
   secret_id = each.value
@@ -218,6 +260,9 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
     google_secret_manager_secret.rag_corpus_id,
     google_secret_manager_secret.a2a_agent_quizz_agent_url,
     google_secret_manager_secret.a2a_agent_training_script_agent_url,
+    google_secret_manager_secret.use_agent_engine_sessions,
+    google_secret_manager_secret.google_cloud_agent_engine_enable_telemetry,
+    google_secret_manager_secret.otel_instrumentation_genai_capture_message_content,
   ]
 }
 

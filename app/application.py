@@ -16,7 +16,12 @@ logger = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application instance."""
 
-    generate_all_agent_cards()
+    try:
+        generate_all_agent_cards()
+    except Exception as e:
+        logger.error(f"FATAL: Failed to generate agent cards on startup: {e}", exc_info=True)
+        # Re-raise the exception to prevent the app from starting in a broken state
+        raise
 
     session_service_uri = None
     if settings.USE_AGENT_ENGINE_SESSIONS:

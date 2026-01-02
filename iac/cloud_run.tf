@@ -22,6 +22,9 @@ resource "google_cloud_run_v2_service" "default" {
     google_secret_manager_secret_version.a2a_agent_quizz_agent_url,
     google_secret_manager_secret_version.a2a_agent_training_script_agent_url,
     google_secret_manager_secret_version.agent_engine_id_secret_version,
+    google_secret_manager_secret_version.use_agent_engine_sessions,
+    google_secret_manager_secret_version.google_cloud_agent_engine_enable_telemetry,
+    google_secret_manager_secret_version.otel_instrumentation_genai_capture_message_content,
   ]
 
   template {
@@ -31,7 +34,12 @@ resource "google_cloud_run_v2_service" "default" {
     }
     containers {
       image = var.image
-      
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "1Gi" # Increase from default 512Mi to 1Gi
+        }
+      }
       env {
         name = "GOOGLE_CLOUD_LOCATION"
         value_source {
@@ -163,6 +171,33 @@ resource "google_cloud_run_v2_service" "default" {
         value_source {
           secret_key_ref {
             secret  = "AGENT_ENGINE_ID"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "USE_AGENT_ENGINE_SESSIONS"
+        value_source {
+          secret_key_ref {
+            secret  = "USE_AGENT_ENGINE_SESSIONS"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY"
+        value_source {
+          secret_key_ref {
+            secret  = "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
+        value_source {
+          secret_key_ref {
+            secret  = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"
             version = "latest"
           }
         }
