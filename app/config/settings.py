@@ -83,14 +83,14 @@ class Settings(BaseSettings):
         )
 
     MODEL: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-1.5-flash-001",
         description="AI model to use for the agent",
     )
 
     @property
     def AGENT_DIR(self) -> str:
         """Get the absolute path to the agents directory."""
-        return str(Path(__file__).parent.parent / "components" / "agents")
+        return "app/components/agents"
 
     @property
     def INSTRUCTIONS_DIR(self) -> str:
