@@ -4,7 +4,26 @@
   "description": "Agent sp\u00e9cialis\u00e9 dans la cr\u00e9ation de scripts de formation p\u00e9dagogiques et structur\u00e9s.",
   "version": "1.0.0",
   "capabilities": {},
-  "skills": [],
+  "skills": [
+    {
+      "id": "generic_training_script_request",
+      "name": "G\u00e9rer les demandes de scripts de formation",
+      "description": "Traite toute demande concernant les scripts de formation : cr\u00e9ation sur un sujet, adaptation de niveau, structuration d'agenda, g\u00e9n\u00e9ration d'exercices, extraction d'objectifs, et cr\u00e9ation d'\u00e9valuations. Formulez votre demande en langage naturel.",
+      "tags": [
+        "Formation",
+        "Script",
+        "P\u00e9dagogie",
+        "Apprentissage",
+        "G\u00e9n\u00e9rique"
+      ],
+      "examples": [
+        "Cr\u00e9e un script de formation d'une heure sur les bases de Python",
+        "Adapte cette formation pour un public de managers",
+        "G\u00e9n\u00e8re des exercices pratiques pour cette session sur Docker",
+        "Quels sont les objectifs p\u00e9dagogiques de ce document ?"
+      ]
+    }
+  ],
   "defaultInputModes": [
     "text/plain"
   ],

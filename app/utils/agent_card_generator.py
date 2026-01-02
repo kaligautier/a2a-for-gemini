@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from app.config.settings import settings
+from app.config.skills import get_skills_for_agent
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +88,34 @@ def generate_agent_card(agent_name: str, agent_instance: Any) -> bool:
 
     description = get_agent_description(agent_name, agent_instance)
 
+    try:
+        agent_skills = get_skills_for_agent(agent_name)
+        skills_list = []
+        for skill in agent_skills:
+            if hasattr(skill, 'to_dict'):
+                skill_dict = skill.to_dict()
+            else:
+                skill_dict = {
+                    "id": skill.id,
+                    "name": skill.name,
+                    "description": skill.description,
+                    "tags": skill.tags,
+                    "examples": skill.examples if skill.examples else [],
+                }
+            skills_list.append(skill_dict)
+        schemas_count = sum(1 for s in skills_list if "inputSchema" in s and "outputSchema" in s)
+        logger.info(f"  • Loaded {len(skills_list)} skills for {agent_name} ({schemas_count} with schemas)")
+    except ValueError as e:
+        logger.warning(f"  • No skills configured for {agent_name}: {e}")
+        skills_list = []
+
     agent_card = {
         "name": agent_name,
         "url": service_url,
         "description": description,
         "version": "1.0.0",
         "capabilities": {},
-        "skills": [],
+        "skills": skills_list,
         "defaultInputModes": ["text/plain"],
         "defaultOutputModes": ["text/plain"],
         "supportsAuthenticatedExtendedCard": False,
@@ -109,8 +131,12 @@ def generate_agent_card(agent_name: str, agent_instance: Any) -> bool:
     try:
         with open(agent_json_path, "w") as f:
             json.dump(agent_card, f, indent=2)
+        try:
+            display_path = agent_json_path.relative_to(Path.cwd())
+        except ValueError:
+            display_path = agent_json_path
 
-        logger.info(f"✓ Generated {agent_json_path.relative_to(Path.cwd())}")
+        logger.info(f"✓ Generated {display_path}")
         return True
     except Exception as e:
         logger.error(f"Failed to write {agent_json_path}: {e}")

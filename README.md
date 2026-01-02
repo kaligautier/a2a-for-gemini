@@ -1,48 +1,71 @@
 # a2a-for-gemini
-A2a for Chronodrive Gemini Entreprise
+A2A pour Chronodrive Gemini Entreprise
 
-Les objectifs du projet sont de déployer un agent en a2a avec du terraform et toute la pipeline de ci/cd.
+Les objectifs du projet sont de déployer un agent en A2A avec Terraform et toute la pipeline CI/CD.
 
-Je veux exposer plusieurs agents à travers le protocol a2a. 
+Ce projet expose plusieurs agents à travers le protocole A2A. Les agents sont connectés à Gemini Entreprise via Vertex AI et utilisent des bases vectorielles RAG managées.
 
-Les agents sont connectés à Gemini Entreprise.
+## Agents Disponibles
 
-L'application propose 2 agents : 
+L'application propose 2 agents :
 
-1. Agent pour la génération de quizz basé sur une base vactoriel managé.
-2. Génaration de script pour créer des formations en interne basé sur une base vactoriel managé.
+### 1. **quizz_agent**
+Agent spécialisé dans la création de quiz interactifs basés sur des documents fournis par l'utilisateur.
 
-# Infrastructure
+- **Endpoint**: `http://localhost:8085/a2a/quizz_agent`
+- **Agent Card**: `http://localhost:8085/a2a/quizz_agent/.well-known/agent-card.json`
 
-Github reposotory -> Cloud Build -> Artifac Registry -> Cloud Run 
+### 2. **training_script_agent**
+Agent spécialisé dans la création de scripts de formation pédagogiques et structurés.
 
-Pour lancer le projet il faut : 
+- **Endpoint**: `http://localhost:8085/a2a/training_script_agent`
+- **Agent Card**: `http://localhost:8085/a2a/training_script_agent/.well-known/agent-card.json`
 
-`un sync`
+## Infrastructure
 
-Pour lancer ADK :
+```
+Github Repository → Cloud Build → Artifact Registry → Cloud Run
+```
 
-`uv run uvicorn app.main:app --reload --port 8085`
+## Installation et Démarrage
 
+### Synchroniser les dépendances
+
+```bash
+uv sync
+```
+
+### Lancer l'application ADK en local
+
+```bash
+uv run uvicorn app.main:app --reload --port 8085
+```
+
+Une fois démarré, vous pouvez accéder à :
+- **Web UI**: `http://localhost:8085/web`
+- **Documentation API**: `http://localhost:8085/docs`
+- **Health Check**: `http://localhost:8085/health`
 
 # Guide d'utilisation A2A
 
-## Endpoint A2A
-
-**URL de base en local **: `http://localhost:8085/a2a/seq_and_loop_agent`
-
-**Agent Card**: `http://localhost:8085/a2a/seq_and_loop_agent/.well-known/agent-card.json`
-
 ## Format de requête JSON-RPC
+
+### Champs obligatoires
+
+Toute requête JSON-RPC A2A doit contenir :
+- **`id`** : Identifiant unique de la requête (nombre ou chaîne)
+- **`messageId`** : Identifiant unique du message dans `params.message`
 
 ### Méthode principale: `message/send`
 
 Envoie un message à l'agent et attend la réponse complète.
 
-### Exemple avec curl
+### Exemples avec curl
+
+#### Exemple 1 : Agent Quizz
 
 ```bash
-curl -X POST http://localhost:8085/a2a/seq_and_loop_agent \
+curl -X POST http://localhost:8085/a2a/quizz_agent \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -53,12 +76,35 @@ curl -X POST http://localhost:8085/a2a/seq_and_loop_agent \
         "role": "user",
         "parts": [
           {
-            "text": "Écris une histoire sur un robot"
+            "text": "Crée un quiz sur la sécurité informatique"
           }
         ]
       }
     },
     "id": 1
+  }'
+```
+
+#### Exemple 2 : Agent Training Script
+
+```bash
+curl -X POST http://localhost:8085/a2a/training_script_agent \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "messageId": "msg-002",
+        "role": "user",
+        "parts": [
+          {
+            "text": "il y a quoi dans la charte formateur en interne"
+          }
+        ]
+      }
+    },
+    "id": 2
   }'
 ```
 
@@ -123,18 +169,112 @@ Le protocole A2A d'ADK supporte les méthodes suivantes:
 }
 ```
 
-Exemple pour pouvoir consommer un agent distant via a2a
+## Consommer un agent distant via A2A
 
-```
-prime_agent = RemoteA2aAgent(
-    name="prime_agent",
-    description="Agent for story refinement using sequential and loop patterns with iterative critique and improvement",
+### Exemple : Utiliser un agent distant dans un autre agent
+
+```python
+from google.adk.agents import LlmAgent
+from google.adk.agents.remote import RemoteA2aAgent
+from app.config.settings import settings
+
+# Créer une référence vers un agent distant
+quizz_agent_remote = RemoteA2aAgent(
+    name="quizz_agent",
+    description="Agent spécialisé dans la création de quiz interactifs",
     agent_card=(
-        f"{settings.A2A_BASE_URL}/.well-known/agent-card.json"
+        f"{settings.get_agent_url('quizz_agent')}/a2a/quizz_agent/.well-known/agent-card.json"
     ),
 )
 
+# L'utiliser comme sous-agent
 root_agent = LlmAgent(
-    sub_agents=[prime_agent],
+    name="orchestrator",
+    sub_agents=[quizz_agent_remote],
+    # ...
 )
 ```
+
+### Configuration des URLs personnalisées
+
+Vous pouvez définir des URLs personnalisées pour chaque agent via les variables d'environnement :
+
+```bash
+# URL de base (par défaut)
+A2A_BASE_URL=http://localhost:8085
+
+# URLs spécifiques par agent (optionnel)
+A2A_AGENT_QUIZZ_AGENT_URL=https://quizz.example.com
+A2A_AGENT_TRAINING_SCRIPT_AGENT_URL=https://training.example.com
+```
+
+## Configuration du projet
+
+### Variables d'environnement principales
+
+Créez un fichier `.env` à la racine du projet :
+
+```bash
+# Application
+APP_NAME=a2a-for-gemini
+LOG_LEVEL=INFO
+
+# Google Cloud
+GOOGLE_CLOUD_PROJECT=votre-projet-gcp
+GOOGLE_CLOUD_LOCATION=europe-west1
+GOOGLE_GENAI_USE_VERTEXAI=true
+
+# Modèle AI
+MODEL=gemini-1.5-flash-001
+
+# A2A
+A2A_BASE_URL=http://localhost:8085
+
+# RAG Corpus
+RAG_CORPUS_ID=projects/PROJECT_ID/locations/LOCATION/ragCorpora/CORPUS_ID
+
+# Sessions managées (optionnel)
+USE_AGENT_ENGINE_SESSIONS=false
+# AGENT_ENGINE_ID=projects/PROJECT_ID/locations/LOCATION/reasoningEngines/ENGINE_ID
+
+# Télémétrie (optionnel)
+GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=false
+OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=false
+```
+
+## Architecture du projet
+
+```
+app/
+├── components/
+│   ├── agents/           # Définition des agents
+│   │   ├── quizz_agent/
+│   │   │   ├── agent.py
+│   │   │   └── .adk/
+│   │   ├── training_script_agent/
+│   │   │   ├── agent.py
+│   │   │   └── .adk/
+│   │   └── registry.py   # Registre central des agents
+│   ├── tools/            # Outils personnalisés
+│   │   └── custom/
+│   │       └── vertex_ai_rag_retrieval_tool.py
+│   └── callbacks/        # Callbacks pour logging et monitoring
+├── config/
+│   ├── settings.py       # Configuration centralisée
+│   └── constants.py      # Constantes et instructions
+├── instructions/         # Templates d'instructions
+├── utils/               # Utilitaires
+└── main.py              # Point d'entrée FastAPI
+```
+
+## Fonctionnalités
+
+- **Multi-agents** : Support de plusieurs agents spécialisés
+- **Protocole A2A** : Exposition complète via JSON-RPC 2.0
+- **RAG** : Intégration avec Vertex AI RAG pour les bases vectorielles
+- **Sessions managées** : Support optionnel des sessions via Agent Engine
+- **Télémétrie** : OpenTelemetry pour monitoring et traces
+- **Web UI** : Interface web pour tester les agents
+- **API Documentation** : Swagger/OpenAPI automatique
+- **Health Check** : Endpoint pour monitoring
+- **CI/CD** : Pipeline complète avec Cloud Build

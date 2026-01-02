@@ -34,7 +34,12 @@ resource "google_cloud_run_v2_service" "default" {
     }
     containers {
       image = var.image
-      
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "1Gi" # Increase from default 512Mi to 1Gi
+        }
+      }
       env {
         name = "GOOGLE_CLOUD_LOCATION"
         value_source {
