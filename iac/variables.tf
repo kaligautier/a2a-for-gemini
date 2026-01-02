@@ -25,3 +25,9 @@ variable "image" {
   type        = string
   description = "Docker image for the Cloud Run service"
 }
+
+variable "alert_email" {
+  type        = string
+  description = "Email address for monitoring alerts"
+  default     = "admin@chronodrive.com"
+}

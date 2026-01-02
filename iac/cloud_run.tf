@@ -28,12 +28,27 @@ resource "google_cloud_run_v2_service" "default" {
   ]
 
   template {
+    # Limiter les instances pour contrôler les coûts et éviter les abus
     scaling {
       min_instance_count = 0
-      max_instance_count = 1
+      max_instance_count = 3  # Max 3 instances concurrentes
     }
+
+    # Timeout pour éviter les requêtes qui durent trop longtemps
+    timeout = "60s"  # Maximum 60 secondes par requête
+
     containers {
       image = var.image
+
+      # Limites de ressources
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "512Mi"
+        }
+        cpu_idle          = true  # Scale down quand inactif
+        startup_cpu_boost = false # Pas de boost au démarrage
+      }
       
       env {
         name = "GOOGLE_CLOUD_LOCATION"
@@ -217,8 +232,28 @@ output "a2a_training_script_agent_url" {
   value       = "${google_cloud_run_v2_service.default.uri}/a2a/training_script_agent"
 }
 
+# Allow public (unauthenticated) access to Cloud Run service
+# Required for Gemini Enterprise to access the A2A agent
+resource "google_cloud_run_v2_service_iam_member" "public_access" {
+  project  = google_cloud_run_v2_service.default.project
+  location = google_cloud_run_v2_service.default.location
+  name     = google_cloud_run_v2_service.default.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 output "project_id" {
   description = "GCP Project ID"
   value       = data.google_project.project.project_id
+}
+
+output "quizz_agent_card_url" {
+  description = "Agent Card URL for the quizz agent (use this in Gemini Enterprise)"
+  value       = "${google_cloud_run_v2_service.default.uri}/a2a/quizz_agent/.well-known/agent-card.json"
+}
+
+output "training_script_agent_card_url" {
+  description = "Agent Card URL for the training script agent (use this in Gemini Enterprise)"
+  value       = "${google_cloud_run_v2_service.default.uri}/a2a/training_script_agent/.well-known/agent-card.json"
 }
 
