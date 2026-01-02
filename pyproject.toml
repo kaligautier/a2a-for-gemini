@@ -8,20 +8,20 @@ authors = [
 dependencies = [
     "a2a-sdk>=0.2.16",
     "gradio>=5.38.2",
-    "google-adk>=1.15.0,<2.0.0",
+    "google-adk",
     "google-cloud-bigquery>=3.24.0,<4.0.0", # Added BigQuery dependency
     "opentelemetry-instrumentation-google-genai>=0.1.0,<1.0.0",
     "gcsfs>=2024.11.0",
     "google-cloud-logging>=3.12.0,<4.0.0",
     "google-cloud-aiplatform[evaluation]>=1.118.0,<2.0.0",
-    "fastapi~=0.115.8",
-    "uvicorn~=0.34.0",
+    "fastapi",
+    "uvicorn",
     "psycopg2-binary>=2.9.10,<3.0.0",
     "python-frontmatter>=1.1.0",
     "toolbox-core>=0.5.4",
     "google-cloud-secret-manager>=2.19.0,<3.0.0",
 ]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.12,<3.13"
 
 
 [dependency-groups]
