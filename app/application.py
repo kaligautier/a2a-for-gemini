@@ -1,7 +1,8 @@
 """FastAPI application factory."""
 
+import json
 import logging
-
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -45,6 +46,37 @@ def create_app() -> FastAPI:
     app.title = settings.APP_NAME
     app.description = settings.APP_DESCRIPTION
     app.version = settings.APP_VERSION
+
+    # Remove ADK's default agent-card route and replace with our own
+    # to include inputSchema and outputSchema which the A2A SDK doesn't support
+    routes_to_remove = []
+    for route in app.router.routes:
+        if hasattr(route, 'path') and route.path == "/a2a/quizz_agent/.well-known/agent-card.json":
+            routes_to_remove.append(route)
+    
+    for route in routes_to_remove:
+        app.router.routes.remove(route)
+        logger.info(f"Removed ADK default route: {route.path}")
+
+    @app.get("/a2a/quizz_agent/.well-known/agent-card.json", tags=["A2A"], summary="Quizz Agent Card Override")
+    async def quizz_agent_card_override() -> JSONResponse:
+        """
+        Override the ADK-generated agent card to include inputSchema and outputSchema.
+        The A2A SDK's AgentSkill model doesn't support these fields, so we serve
+        the agent.json file directly.
+        """
+        agent_json_path = Path(settings.AGENT_DIR) / "quizz_agent" / "agent.json"
+        
+        try:
+            with open(agent_json_path, "r", encoding="utf-8") as f:
+                agent_card_data = json.load(f)
+            return JSONResponse(content=agent_card_data, status_code=200)
+        except Exception as e:
+            logger.error(f"Failed to load agent card from {agent_json_path}: {e}")
+            return JSONResponse(
+                content={"error": "Agent card not found"},
+                status_code=404
+            )
 
     @app.get("/health", tags=["Health"], summary="Health Check")
     async def health_check() -> JSONResponse:

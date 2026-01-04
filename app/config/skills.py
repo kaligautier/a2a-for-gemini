@@ -6,15 +6,13 @@ Skills are defined in their respective agent's skills module under
 `app/components/skills/<agent_name>/skills.py`.
 """
 
-from a2a.types import AgentSkill
-
 from app.components.skills.quizz_agent.quizz_agent_skills import QUIZZ_AGENT_SKILLS
 from app.components.skills.training_script_agent.training_script_agent_skills import (
     TRAINING_SCRIPT_AGENT_SKILLS,
 )
 
 
-def get_skills_for_agent(agent_name: str) -> list[AgentSkill]:
+def get_skills_for_agent(agent_name: str) -> list[dict]:
     """
     Get the list of skills for a specific agent.
 
@@ -22,7 +20,7 @@ def get_skills_for_agent(agent_name: str) -> list[AgentSkill]:
         agent_name: Name of the agent
 
     Returns:
-        List of AgentSkill objects for that agent
+        List of skill dictionaries for that agent
 
     Raises:
         ValueError: If agent_name is not recognized
@@ -41,7 +39,7 @@ def get_skills_for_agent(agent_name: str) -> list[AgentSkill]:
     return skills_map[agent_name]
 
 
-def get_all_skills() -> dict[str, list[AgentSkill]]:
+def get_all_skills() -> dict[str, list[dict]]:
     """
     Get all skills for all agents.
 

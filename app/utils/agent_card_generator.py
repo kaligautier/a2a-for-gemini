@@ -90,19 +90,7 @@ def generate_agent_card(agent_name: str, agent_instance: Any) -> bool:
 
     try:
         agent_skills = get_skills_for_agent(agent_name)
-        skills_list = []
-        for skill in agent_skills:
-            if hasattr(skill, 'to_dict'):
-                skill_dict = skill.to_dict()
-            else:
-                skill_dict = {
-                    "id": skill.id,
-                    "name": skill.name,
-                    "description": skill.description,
-                    "tags": skill.tags,
-                    "examples": skill.examples if skill.examples else [],
-                }
-            skills_list.append(skill_dict)
+        skills_list = agent_skills  # Already a list of dicts
         schemas_count = sum(1 for s in skills_list if "inputSchema" in s and "outputSchema" in s)
         logger.info(f"  • Loaded {len(skills_list)} skills for {agent_name} ({schemas_count} with schemas)")
     except ValueError as e:
@@ -111,14 +99,16 @@ def generate_agent_card(agent_name: str, agent_instance: Any) -> bool:
 
     agent_card = {
         "name": agent_name,
-        "url": service_url,
-        "description": description,
         "version": "1.0.0",
-        "capabilities": {},
-        "skills": skills_list,
+        "description": description,
+        "protocolVersion": "0.3.0",
+        "preferredTransport": "JSONRPC",
         "defaultInputModes": ["text/plain"],
         "defaultOutputModes": ["text/plain"],
         "supportsAuthenticatedExtendedCard": False,
+        "url": f"{service_url}/a2a/{agent_name}",
+        "capabilities": {},
+        "skills": skills_list,
     }
 
     agent_dir = get_agent_directory(agent_name)

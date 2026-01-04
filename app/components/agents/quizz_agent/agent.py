@@ -20,7 +20,7 @@ root_agent = LlmAgent(
     description=AGENT_QUIZZ_DESCRIPTION,
     instruction=AGENT_QUIZZ_INSTRUCTION,
     tools=[
-        vertex_ai_rag_retrieval_tool
+        #vertex_ai_rag_retrieval_tool
     ],
     before_agent_callback=log_agent_start,
     after_agent_callback=log_agent_end,
