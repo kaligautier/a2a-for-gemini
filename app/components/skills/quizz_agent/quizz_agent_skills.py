@@ -11,23 +11,6 @@ chat_interaction_skill = {
         "Génère 2 autres versions de ce test sur la biologie",
         "Explique-moi les réponses du quiz précédent",
     ],
-    "inputSchema": {
-        "type": "object",
-        "properties": {
-            "message": {
-                "$ref": "http://a2a-protocol.org/schema/message.json",
-                "description": "Le message A2A standard contenant la demande de l'utilisateur."
-            }
-        }
-    },
-    "outputSchema": {
-        "type": "object",
-        "properties": {
-            "message": {
-                "$ref": "http://a2a-protocol.org/schema/message.json"
-            }
-        }
-    }
 }
 
 QUIZZ_AGENT_SKILLS = [chat_interaction_skill]
